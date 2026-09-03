@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>CRUD Nesto</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input,
+        select,
+        button {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            flex: 1;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background: #eee;
+        }
+
+        .edit-button {
+            margin-right: 5px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>CRUD Nesto</h1>
+
+
+    <!-- CUSTOMER FORM -->
+
+    <form id="customerForm">
+
+        <input
+            type="text"
+            id="customer_name"
+            placeholder="Customer Name"
+            required
+        >
+
+
+        <select id="gender" required>
+
+            <option value="">
+                Select Gender
+            </option>
+
+            <option value="Male">
+                Male
+            </option>
+
+            <option value="Female">
+                Female
+            </option>
+
+            <option value="Other">
+                Other
+            </option>
+
+        </select>
+
+
+        <input
+            type="number"
+            id="amount"
+            placeholder="Amount"
+            step="0.01"
+            min="0"
+            required
+        >
+
+
+        <button type="submit" id="submitButton">
+            Add Customer
+        </button>
+
+
+        <button
+            type="button"
+            id="cancelButton"
+            style="display:none;"
+        >
+            Cancel
+        </button>
+
+    </form>
+
+
+    <!-- CUSTOMER TABLE -->
+
+    <table>
+
+        <thead>
+
+            <tr>
+
+                <th>Customer ID</th>
+
+                <th>Customer Name</th>
+
+                <th>Gender</th>
+
+                <th>Amount</th>
+
+                <th>Actions</th>
+
+            </tr>
+
+        </thead>
+
+
+        <tbody id="customerTable">
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<script>
+
+let editingId = null;
+
+
+// ========================================
+// READ - LOAD CUSTOMERS
+// ========================================
+
+async function loadCustomers() {
+
+    const response =
+        await fetch("/api/customers");
+
+    const customers =
+        await response.json();
+
+
+    const table =
+        document.getElementById("customerTable");
+
+
+    table.innerHTML = "";
+
+
+    customers.forEach(customer => {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>
+                ${customer.customer_id}
+            </td>
+
+            <td>
+                ${customer.customer_name}
+            </td>
+
+            <td>
+                ${customer.gender}
+            </td>
+
+            <td>
+                ${customer.amount}
+            </td>
+
+            <td>
+
+                <button
+                    class="edit-button"
+                    onclick="editCustomer(${customer.customer_id})">
+
+                    Edit
+
+                </button>
+
+
+                <button
+                    onclick="deleteCustomer(${customer.customer_id})">
+
+                    Delete
+
+                </button>
+
+            </td>
+
+        `;
+
+
+        table.appendChild(row);
+
+    });
+
+}
+
+
+// ========================================
+// CREATE / UPDATE
+// ========================================
+
+document
+    .getElementById("customerForm")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const customer_name =
+                document
+                    .getElementById("customer_name")
+                    .value;
+
+
+            const gender =
+                document
+                    .getElementById("gender")
+                    .value;
+
+
+            const amount =
+                document
+                    .getElementById("amount")
+                    .value;
+
+
+            const data = {
+
+                customer_name:
+                    customer_name,
+
+                gender:
+                    gender,
+
+                amount:
+                    amount
+
+            };
+
+
+            let response;
+
+
+            // CREATE
+
+            if (editingId === null) {
+
+                response =
+                    await fetch(
+                        "/api/customers",
+                        {
+
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(data)
+
+                        }
+                    );
+
+            }
+
+
+            // UPDATE
+
+            else {
+
+                response =
+                    await fetch(
+                        `/api/customers/${editingId}`,
+                        {
+
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(data)
+
+                        }
+                    );
+
+            }
+
+
+            if (response.ok) {
+
+                resetForm();
+
+                loadCustomers();
+
+            }
+
+            else {
+
+                const error =
+                    await response.json();
+
+                alert(error.error);
+
+            }
+
+        }
+    );
+
+
+// ========================================
+// EDIT
+// ========================================
+
+async function editCustomer(id) {
+
+    const response =
+        await fetch(
+            `/api/customers/${id}`
+        );
+
+
+    const customer =
+        await response.json();
+
+
+    document
+        .getElementById("customer_name")
+        .value =
+            customer.customer_name;
+
+
+    document
+        .getElementById("gender")
+        .value =
+            customer.gender;
+
+
+    document
+        .getElementById("amount")
+        .value =
+            customer.amount;
+
+
+    editingId = id;
+
+
+    document
+        .getElementById("submitButton")
+        .textContent =
+            "Update Customer";
+
+
+    document
+        .getElementById("cancelButton")
+        .style.display =
+            "inline-block";
+
+}
+
+
+// ========================================
+// DELETE
+// ========================================
+
+async function deleteCustomer(id) {
+
+    const confirmDelete =
+        confirm(
+            "Are you sure you want to delete this customer?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    const response =
+        await fetch(
+            `/api/customers/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+
+    if (response.ok) {
+
+        loadCustomers();
+
+    }
+
+}
+
+
+// ========================================
+// RESET FORM
+// ========================================
+
+function resetForm() {
+
+    document
+        .getElementById("customerForm")
+        .reset();
+
+
+    editingId = null;
+
+
+    document
+        .getElementById("submitButton")
+        .textContent =
+            "Add Customer";
+
+
+    document
+        .getElementById("cancelButton")
+        .style.display =
+            "none";
+
+}
+
+
+// CANCEL BUTTON
+
+document
+    .getElementById("cancelButton")
+    .addEventListener(
+        "click",
+        resetForm
+    );
+
+
+// ========================================
+// INITIAL LOAD
+// ========================================
+
+loadCustomers();
+
+</script>
+
+</body>
+
+</html>
