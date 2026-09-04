@@ -2,7 +2,6 @@ from extensions import db
 
 
 class CrudNesto(db.Model):
-
     __tablename__ = "crud_nesto"
 
     customer_id = db.Column(
