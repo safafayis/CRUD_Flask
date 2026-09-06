@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Register</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-container {
+            width: 90%;
+            max-width: 420px;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow:
+                0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 30px;
+            color: #222;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #555;
+        }
+
+        .error {
+            color: #d93025;
+            font-size: 13px;
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        .message {
+            display: none;
+            padding: 11px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            background: #222;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #444;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #222;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="auth-container">
+
+    <h1>Create Account</h1>
+
+
+    <div
+        id="message"
+        class="message"
+    ></div>
+
+
+    <form
+        id="registerForm"
+        novalidate
+    >
+
+        <!-- Email -->
+
+        <div class="form-group">
+
+            <label for="email">
+                Email
+            </label>
+
+            <input
+                type="text"
+                id="email"
+                autocomplete="email"
+            >
+
+            <div
+                id="emailError"
+                class="error"
+            ></div>
+
+        </div>
+
+
+        <!-- Password -->
+
+        <div class="form-group">
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                autocomplete="new-password"
+            >
+
+            <div
+                id="passwordError"
+                class="error"
+            ></div>
+
+        </div>
+
+
+        <!-- Confirm Password -->
+
+        <div class="form-group">
+
+            <label for="confirm_password">
+                Confirm Password
+            </label>
+
+            <input
+                type="password"
+                id="confirm_password"
+                autocomplete="new-password"
+            >
+
+            <div
+                id="confirmPasswordError"
+                class="error"
+            ></div>
+
+        </div>
+
+
+        <button type="submit">
+            Register
+        </button>
+
+    </form>
+
+
+    <div class="login-link">
+
+        Already have an account?
+
+        <a href="/login">
+            Login
+        </a>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const registerForm =
+        document.getElementById(
+            "registerForm"
+        );
+
+
+    const emailInput =
+        document.getElementById(
+            "email"
+        );
+
+
+    const passwordInput =
+        document.getElementById(
+            "password"
+        );
+
+
+    const confirmPasswordInput =
+        document.getElementById(
+            "confirm_password"
+        );
+
+
+    const emailError =
+        document.getElementById(
+            "emailError"
+        );
+
+
+    const passwordError =
+        document.getElementById(
+            "passwordError"
+        );
+
+
+    const confirmPasswordError =
+        document.getElementById(
+            "confirmPasswordError"
+        );
+
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+
+    function showMessage(
+        text,
+        type
+    ) {
+
+        message.textContent = text;
+
+        message.className =
+            "message " + type;
+
+        message.style.display =
+            "block";
+
+    }
+
+
+    function clearErrors() {
+
+        emailError.textContent = "";
+
+        passwordError.textContent = "";
+
+        confirmPasswordError.textContent = "";
+
+        message.style.display = "none";
+
+    }
+
+
+    function validateEmail(email) {
+
+        email = email.trim();
+
+
+        if (!email) {
+
+            return "Please enter your email.";
+
+        }
+
+
+        const pattern =
+            /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+
+        if (!pattern.test(email)) {
+
+            return "Please enter a valid email.";
+
+        }
+
+
+        return "";
+
+    }
+
+
+    function validatePassword(password) {
+
+        if (!password) {
+
+            return "Please enter a password.";
+
+        }
+
+
+        if (password.length < 8) {
+
+            return "Password must be at least 8 characters.";
+
+        }
+
+
+        return "";
+
+    }
+
+
+    registerForm.addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            clearErrors();
+
+
+            const email =
+                emailInput.value.trim();
+
+            const password =
+                passwordInput.value;
+
+            const confirmPassword =
+                confirmPasswordInput.value;
+
+
+            let valid = true;
+
+
+            const emailValidation =
+                validateEmail(email);
+
+
+            const passwordValidation =
+                validatePassword(password);
+
+
+            if (emailValidation) {
+
+                emailError.textContent =
+                    emailValidation;
+
+                valid = false;
+
+            }
+
+
+            if (passwordValidation) {
+
+                passwordError.textContent =
+                    passwordValidation;
+
+                valid = false;
+
+            }
+
+
+            if (!confirmPassword) {
+
+                confirmPasswordError.textContent =
+                    "Please confirm your password.";
+
+                valid = false;
+
+            }
+
+            else if (
+                password !== confirmPassword
+            ) {
+
+                confirmPasswordError.textContent =
+                    "Passwords do not match.";
+
+                valid = false;
+
+            }
+
+
+            if (!valid) {
+
+                return;
+
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/register",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    email: email,
+                                    password: password,
+                                    confirm_password:
+                                        confirmPassword
+                                })
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    showMessage(
+                        result.error ||
+                        "Unable to create account.",
+                        "error-message"
+                    );
+
+                    return;
+
+                }
+
+
+                showMessage(
+                    "Registration successful. Redirecting to login...",
+                    "success"
+                );
+
+
+                registerForm.reset();
+
+
+                setTimeout(
+                    function() {
+
+                        window.location.href =
+                            "/login";
+
+                    },
+                    1200
+                );
+
+
+            } catch (error) {
+
+                showMessage(
+                    "Unable to connect to the server.",
+                    "error-message"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+
+</html>

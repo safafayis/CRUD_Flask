@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - CRUD Nesto</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .auth-card h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d5d9dd;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            border-color: #555;
+        }
+
+        .password-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 7px;
+        }
+
+        .password-row label {
+            margin-bottom: 0;
+        }
+
+        .forgot-link {
+            border: none;
+            background: none;
+            color: #2563eb;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 7px;
+            background: #222;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn:hover {
+            background: #333;
+        }
+
+        .message {
+            display: none;
+            padding: 10px 12px;
+            border-radius: 7px;
+            margin-bottom: 18px;
+            font-size: 14px;
+        }
+
+        .message.error {
+            display: block;
+            background: #fff1f1;
+            color: #c62828;
+            border: 1px solid #ffcaca;
+        }
+
+        .message.success {
+            display: block;
+            background: #effaf0;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .register-text {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .register-text a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* MODAL */
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            margin-bottom: 8px;
+            color: #222;
+        }
+
+        .modal-description {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 11px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .cancel-btn {
+            background: white;
+            border: 1px solid #ccc;
+            color: #333;
+        }
+
+        .reset-btn {
+            background: #222;
+            border: 1px solid #222;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .reset-btn:hover {
+            background: #333;
+        }
+
+        .reset-link-box {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            border-radius: 7px;
+            word-break: break-all;
+        }
+
+        .reset-link-box a {
+            color: #2563eb;
+            font-size: 13px;
+        }
+
+        .dev-note {
+            font-size: 12px;
+            color: #777;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <h1>Login</h1>
+
+        <p class="subtitle">
+            Sign in to manage your customers
+        </p>
+
+        <div
+            id="loginMessage"
+            class="message">
+        </div>
+
+        <form id="loginForm" novalidate>
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <div class="password-row">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <button
+                        type="button"
+                        class="forgot-link"
+                        id="forgotPasswordBtn">
+                        Forgot Password?
+                    </button>
+
+                </div>
+
+                <input
+                    type="password"
+                    id="password"
+                    autocomplete="current-password"
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn">
+                Login
+            </button>
+
+        </form>
+
+
+        <div class="register-text">
+
+            Don't have an account?
+
+            <a href="/register">
+                Create Account
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- FORGOT PASSWORD MODAL -->
+
+<div
+    class="modal-overlay"
+    id="forgotModal">
+
+    <div class="modal">
+
+        <h2>
+            Reset Password
+        </h2>
+
+        <p class="modal-description">
+            Enter your registered email address to reset
+            your password.
+        </p>
+
+
+        <div
+            id="forgotMessage"
+            class="message">
+        </div>
+
+
+        <form
+            id="forgotForm"
+            novalidate>
+
+            <div class="form-group">
+
+                <label for="forgotEmail">
+                    Email
+                </label>
+
+                <input
+                    type="email"
+                    id="forgotEmail"
+                    autocomplete="email"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="newPassword">
+                    New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="newPassword"
+                    autocomplete="new-password"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="confirmNewPassword">
+                    Confirm New Password
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmNewPassword"
+                    autocomplete="new-password"
+                >
+
+            </div>
+
+
+            <div class="modal-buttons">
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    id="cancelForgotBtn">
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="reset-btn">
+                    Reset Password
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <div
+            id="resetLinkBox"
+            class="reset-link-box">
+
+            <strong>
+                Reset link:
+            </strong>
+
+            <br>
+
+            <a
+                href="#"
+                id="resetLink"
+                target="_self">
+            </a>
+
+            <p class="dev-note">
+                This reset link is displayed for local
+                development. In a production application,
+                this link should be sent to the user's email.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const loginForm =
+        document.getElementById("loginForm");
+
+    const loginMessage =
+        document.getElementById("loginMessage");
+
+    const forgotPasswordBtn =
+        document.getElementById("forgotPasswordBtn");
+
+    const forgotModal =
+        document.getElementById("forgotModal");
+
+    const cancelForgotBtn =
+        document.getElementById("cancelForgotBtn");
+
+    const forgotForm =
+        document.getElementById("forgotForm");
+
+    const forgotMessage =
+        document.getElementById("forgotMessage");
+
+    const forgotEmail =
+        document.getElementById("forgotEmail");
+
+    const resetLinkBox =
+        document.getElementById("resetLinkBox");
+
+    const resetLink =
+        document.getElementById("resetLink");
+
+
+    function showMessage(element, text, type) {
+
+        element.textContent = text;
+
+        element.className =
+            "message " + type;
+    }
+
+
+    function clearMessage(element) {
+
+        element.textContent = "";
+
+        element.className =
+            "message";
+    }
+
+
+    // --------------------------------------------------
+    // LOGIN
+    // --------------------------------------------------
+
+    loginForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            clearMessage(loginMessage);
+
+            const email =
+                document.getElementById("email")
+                .value
+                .trim();
+
+            const password =
+                document.getElementById("password")
+                .value;
+
+
+            if (!email) {
+
+                showMessage(
+                    loginMessage,
+                    "Please enter your email address.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    loginMessage,
+                    "Please enter your password.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/login",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                email: email,
+                                password: password
+                            })
+                        }
+                    );
+
+
+                const data =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    showMessage(
+                        loginMessage,
+                        data.error ||
+                            "Unable to login.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                showMessage(
+                    loginMessage,
+                    "Login successful.",
+                    "success"
+                );
+
+
+                setTimeout(
+                    function () {
+                        window.location.href =
+                            "/customers";
+                    },
+                    700
+                );
+
+            }
+
+            catch (error) {
+
+                showMessage(
+                    loginMessage,
+                    "Something went wrong. Please try again.",
+                    "error"
+                );
+            }
+
+        }
+    );
+
+
+    // --------------------------------------------------
+    // OPEN FORGOT PASSWORD MODAL
+    // --------------------------------------------------
+
+    forgotPasswordBtn.addEventListener(
+        "click",
+        function () {
+
+            clearMessage(forgotMessage);
+
+            forgotForm.reset();
+
+            resetLinkBox.style.display =
+                "none";
+
+            resetLink.href = "#";
+
+            resetLink.textContent = "";
+
+            forgotModal.classList.add("active");
+
+        }
+    );
+
+
+    // --------------------------------------------------
+    // CLOSE FORGOT PASSWORD MODAL
+    // --------------------------------------------------
+
+    cancelForgotBtn.addEventListener(
+        "click",
+        function () {
+
+            forgotModal.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+
+    // Close when clicking outside modal
+
+    forgotModal.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target ===
+                forgotModal
+            ) {
+
+                forgotModal.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+    );
+
+
+    // --------------------------------------------------
+    // FORGOT PASSWORD
+    // --------------------------------------------------
+
+    forgotForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            clearMessage(forgotMessage);
+
+            resetLinkBox.style.display =
+                "none";
+
+
+            const email =
+                forgotEmail
+                .value
+                .trim();
+
+            const password =
+                document.getElementById(
+                    "newPassword"
+                ).value;
+
+            const confirmPassword =
+                document.getElementById(
+                    "confirmNewPassword"
+                ).value;
+
+
+            if (!email) {
+
+                showMessage(
+                    forgotMessage,
+                    "Please enter your email address.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (!password) {
+
+                showMessage(
+                    forgotMessage,
+                    "Please enter a new password.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (password.length < 8) {
+
+                showMessage(
+                    forgotMessage,
+                    "Password must contain at least 8 characters.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            if (
+                password !==
+                confirmPassword
+            ) {
+
+                showMessage(
+                    forgotMessage,
+                    "Passwords do not match.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            try {
+
+                /*
+                 * First request a password-reset token.
+                 */
+
+                const forgotResponse =
+                    await fetch(
+                        "/api/forgot-password",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                email: email
+                            })
+                        }
+                    );
+
+
+                const forgotData =
+                    await forgotResponse.json();
+
+
+                if (!forgotResponse.ok) {
+
+                    showMessage(
+                        forgotMessage,
+                        forgotData.error ||
+                            "Unable to process request.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                /*
+                 * For this local project,
+                 * the reset URL is returned by the backend.
+                 */
+
+                if (!forgotData.reset_url) {
+
+                    showMessage(
+                        forgotMessage,
+                        forgotData.message,
+                        "success"
+                    );
+
+                    return;
+                }
+
+
+                /*
+                 * Extract token from reset URL.
+                 */
+
+                const resetUrl =
+                    forgotData.reset_url;
+
+                const url =
+                    new URL(resetUrl);
+
+                const token =
+                    url.pathname.split("/").pop();
+
+
+                /*
+                 * Now actually reset the password.
+                 */
+
+                const resetResponse =
+                    await fetch(
+                        "/api/reset-password",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+
+                                token: token,
+
+                                password: password,
+
+                                confirm_password:
+                                    confirmPassword
+                            })
+                        }
+                    );
+
+
+                const resetData =
+                    await resetResponse.json();
+
+
+                if (!resetResponse.ok) {
+
+                    showMessage(
+                        forgotMessage,
+                        resetData.error ||
+                            "Unable to reset password.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                showMessage(
+                    forgotMessage,
+                    resetData.message,
+                    "success"
+                );
+
+
+                /*
+                 * Password has now been changed.
+                 */
+
+                forgotForm.reset();
+
+                setTimeout(
+                    function () {
+
+                        forgotModal.classList.remove(
+                            "active"
+                        );
+
+                        showMessage(
+                            loginMessage,
+                            "Password updated. Please login with your new password.",
+                            "success"
+                        );
+
+                    },
+                    1500
+                );
+
+            }
+
+            catch (error) {
+
+                showMessage(
+                    forgotMessage,
+                    "Something went wrong. Please try again.",
+                    "error"
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
